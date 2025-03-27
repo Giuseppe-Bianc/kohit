@@ -17,5 +17,13 @@ SET includeFlags=-Isrc -I../engine/src/
 SET linkerFlags=-L../bin/ -lengine.lib
 SET defines=-D_DEBUG -DKIMPORT
 
-ECHO "Building %assembly%%..."
-clang %cFilenames% %compilerFlags% -o ../bin/%assembly%.exe %defines% %includeFlags% %linkerFlags%
+REM Display build information
+ECHO "Building %assembly%..."
+ECHO "Source files: !cFilenames!"
+ECHO "Compiler flags: %compilerFlags%"
+ECHO "Include flags: %includeFlags%"
+ECHO "Linker flags: %linkerFlags%"
+ECHO "Defines: %defines%"
+
+REM Run the build command
+clang !cFilenames! %compilerFlags% -o ../bin/%assembly%.exe %defines% %includeFlags% %linkerFlags%
