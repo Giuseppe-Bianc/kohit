@@ -4,9 +4,10 @@
 #include "logger.h"
 
 #include "platform/platform.h"
+#include "core/kmemory.h"
 
 typedef struct application_state {
-    game* game_inst;
+    game *game_inst;
     b8 is_running;
     b8 is_suspended;
     platform_state platform;
@@ -18,7 +19,7 @@ typedef struct application_state {
 static b8 initialized = FALSE;
 static application_state app_state;
 
-b8 application_create(game* game_inst) {
+b8 application_create(game *game_inst) {
     if (initialized) {
         KERROR("application_create called more than once.");
         return FALSE;
@@ -59,17 +60,19 @@ b8 application_create(game* game_inst) {
     app_state.game_inst->on_resize(app_state.game_inst, app_state.width, app_state.height);
 
     initialized = TRUE;
-    
+
     return TRUE;
 }
 
-b8 application_run() {
+b8 application_run(){
+    KINFO(get_memory_usage_str());
+
     while (app_state.is_running) {
-        if(!platform_pump_messages(&app_state.platform)) {
+        if (!platform_pump_messages(&app_state.platform)) {
             app_state.is_running = FALSE;
         }
 
-        if(!app_state.is_suspended) {
+        if (!app_state.is_suspended){
             if (!app_state.game_inst->update(app_state.game_inst, (f32)0)) {
                 KFATAL("Game update failed, shutting down.");
                 app_state.is_running = FALSE;
