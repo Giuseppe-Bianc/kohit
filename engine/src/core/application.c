@@ -6,9 +6,10 @@
 #include "platform/platform.h"
 #include "core/kmemory.h"
 #include "core/event.h"
+#include "core/input.h"
 
 typedef struct application_state {
-    game *game_inst;
+    game* game_inst;
     b8 is_running;
     b8 is_suspended;
     platform_state platform;
@@ -20,7 +21,7 @@ typedef struct application_state {
 static b8 initialized = FALSE;
 static application_state app_state;
 
-b8 application_create(game *game_inst) {
+b8 application_create(game* game_inst) {
     if (initialized) {
         KERROR("application_create called more than once.");
         return FALSE;
@@ -30,6 +31,7 @@ b8 application_create(game *game_inst) {
 
     // Initialize subsystems.
     initialize_logging();
+    input_initialize();
 
     // TODO: Remove this
     KFATAL("A test message: %f", 3.14f);
@@ -70,7 +72,7 @@ b8 application_create(game *game_inst) {
     return TRUE;
 }
 
-b8 application_run(){
+b8 application_run() {
     KINFO(get_memory_usage_str());
 
     while (app_state.is_running) {
@@ -78,7 +80,7 @@ b8 application_run(){
             app_state.is_running = FALSE;
         }
 
-        if (!app_state.is_suspended){
+        if (!app_state.is_suspended) {
             if (!app_state.game_inst->update(app_state.game_inst, (f32)0)) {
                 KFATAL("Game update failed, shutting down.");
                 app_state.is_running = FALSE;
@@ -91,12 +93,19 @@ b8 application_run(){
                 app_state.is_running = FALSE;
                 break;
             }
+
+            // NOTE: Input update/state copying should always be handled
+            // after any input should be recorded; I.E. before this line.
+            // As a safety, input is the last thing to be updated before
+            // this frame ends.
+            input_update(0);
         }
     }
 
     app_state.is_running = FALSE;
 
     event_shutdown();
+    input_shutdown();
 
     platform_shutdown(&app_state.platform);
 
