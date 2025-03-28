@@ -8,6 +8,9 @@
 #include "core/event.h"
 #include "core/input.h"
 #include "core/clock.h"
+
+#include "renderer/renderer_frontend.h"
+
 typedef struct application_state {
     game* game_inst;
     b8 is_running;
@@ -68,6 +71,12 @@ b8 application_create(game* game_inst) {
         return FALSE;
     }
 
+    // Renderer startup
+    if (!renderer_initialize(game_inst->app_config.name, &app_state.platform)) {
+        KFATAL("Failed to initialize renderer. Aborting application.");
+        return FALSE;
+    }
+
     // Initialize the game.
     if (!app_state.game_inst->initialize(app_state.game_inst)) {
         KFATAL("Game failed to initialize.");
@@ -87,7 +96,6 @@ b8 application_run() {
     app_state.last_time = app_state.clock.elapsed;
     f64 running_time __attribute__((unused)) = 0;
     u8 frame_count __attribute__((unused)) = 0;
-
     f64 target_frame_seconds = 1.0f / 60;
 
     KINFO(get_memory_usage_str());
@@ -116,6 +124,11 @@ b8 application_run() {
                 app_state.is_running = FALSE;
                 break;
             }
+
+            // TODO: refactor packet creation
+            render_packet packet;
+            packet.delta_time = delta;
+            renderer_draw_frame(&packet);
 
             // Figure out how long the frame took and, if below
             f64 frame_end_time = platform_get_absolute_time();
@@ -154,6 +167,8 @@ b8 application_run() {
     event_unregister(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
     event_shutdown();
     input_shutdown();
+
+    renderer_shutdown();
 
     platform_shutdown(&app_state.platform);
 
