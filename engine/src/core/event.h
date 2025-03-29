@@ -23,7 +23,6 @@ typedef struct event_context {
     } data;
 } event_context;
 
-
 // Should return true if handled.
 typedef b8 (*PFN_on_event)(u16 code, void* sender, void* listener_inst, event_context data);
 
@@ -38,7 +37,7 @@ void event_shutdown();
  * @param on_event The callback function pointer to be invoked when the event code is fired.
  * @returns TRUE if the event is successfully registered; otherwise false.
  */
-KAPI b8 event_register(u16 code, void *listener, PFN_on_event on_event);
+KAPI b8 event_register(u16 code, void* listener, PFN_on_event on_event);
 
 /**
  * Unregister from listening for when events are sent with the provided code. If no matching
@@ -48,18 +47,17 @@ KAPI b8 event_register(u16 code, void *listener, PFN_on_event on_event);
  * @param on_event The callback function pointer to be unregistered.
  * @returns TRUE if the event is successfully unregistered; otherwise false.
  */
-KAPI b8 event_unregister(u16 code, void *listener, PFN_on_event on_event);
+KAPI b8 event_unregister(u16 code, void* listener, PFN_on_event on_event);
 
 /**
- * Fires an event to listeners of the given code. If an event handler returns
+ * Fires an event to listeners of the given code. If an event handler returns 
  * TRUE, the event is considered handled and is not passed on to any more listeners.
  * @param code The event code to fire.
  * @param sender A pointer to the sender. Can be 0/NULL.
  * @param data The event data.
  * @returns TRUE if handled, otherwise FALSE.
  */
-KAPI b8 event_fire(u16 code, void *sender, event_context data);
-
+KAPI b8 event_fire(u16 code, void* sender, event_context context);
 
 // System internal event codes. Application should use codes beyond 255.
 typedef enum system_event_code {

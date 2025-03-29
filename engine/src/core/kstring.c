@@ -1,4 +1,3 @@
-
 #include "core/kstring.h"
 #include "core/kmemory.h"
 
@@ -15,6 +14,7 @@ char* string_duplicate(const char* str) {
     return copy;
 }
 
-b8 strings_equal(const char *str1, const char *str2){
-    return strcmp(str1, str2) == 0;
+// Case-sensitive string comparison. True if the same, otherwise false.
+b8 strings_equal(const char* str0, const char* str1) {
+    return strcmp(str0, str1) == 0;
 }

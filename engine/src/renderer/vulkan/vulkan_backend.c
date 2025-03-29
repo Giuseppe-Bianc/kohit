@@ -2,6 +2,7 @@
 
 #include "vulkan_types.inl"
 #include "vulkan_platform.h"
+#include "vulkan_device.h"
 
 #include "core/logger.h"
 #include "core/kstring.h"
@@ -117,6 +118,20 @@ b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* app
     KDEBUG("Vulkan debugger created.");
 #endif
 
+    // Surface
+    KDEBUG("Creating Vulkan surface...");
+    if (!platform_create_vulkan_surface(plat_state, &context)) {
+        KERROR("Failed to create platform surface!");
+        return FALSE;
+    }
+    KDEBUG("Vulkan surface created.");
+
+    // Device creation
+    if (!vulkan_device_create(&context)) {
+        KERROR("Failed to create device!");
+        return FALSE;
+    }
+
     KINFO("Vulkan renderer initialized successfully.");
     return TRUE;
 }
@@ -150,44 +165,19 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
     VkDebugUtilsMessageTypeFlagsEXT message_types,
     const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
     void* user_data) {
-    const char *type = "UNKNOWN";
-    const char *messageID = callback_data->pMessageIdName ? callback_data->pMessageIdName : "Unknown ID";
-    if (message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT){
-        type = "GENERAL";
-    } else if (message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
-        type = "VALIDATION";
-    } else if (message_types & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) {
-        type = "PERFORMANCE";
-    }
     switch (message_severity) {
         default:
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-            KERROR("[%s] ID: %s (%d) - %s",
-                   type,
-                   messageID,
-                   callback_data->messageIdNumber,
-                   callback_data->pMessage);
+            KERROR(callback_data->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-            KWARN("[%s] ID: %s (%d) - %s",
-                  type,
-                  messageID,
-                  callback_data->messageIdNumber,
-                  callback_data->pMessage);
+            KWARN(callback_data->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-            KINFO("[%s] ID: %s (%d) - %s",
-                  type,
-                  messageID,
-                  callback_data->messageIdNumber,
-                  callback_data->pMessage);
+            KINFO(callback_data->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-            KTRACE("[%s] ID: %s (%d) - %s",
-                   type,
-                   messageID,
-                   callback_data->messageIdNumber,
-                   callback_data->pMessage);
+            KTRACE(callback_data->pMessage);
             break;
     }
     return VK_FALSE;

@@ -11,6 +11,8 @@
 		"renderer_frontend.h": "c",
 		"iosfwd": "c",
 		"tuple": "cpp",
-		"utility": "cpp"
+		"utility": "cpp",
+		"kmemory.h": "c",
+		"defines.h": "c"
 	}
 }
