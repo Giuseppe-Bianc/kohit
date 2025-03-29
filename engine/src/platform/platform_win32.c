@@ -6,6 +6,8 @@
 #include "core/logger.h"
 #include "core/input.h"
 
+#include "containers/darray.h"
+
 #include <windows.h>
 #include <windowsx.h>  // param input extraction
 #include <stdlib.h>
@@ -184,6 +186,10 @@ void platform_sleep(u64 ms) {
     Sleep(ms);
 }
 
+void platform_get_required_extension_names(const char ***names_darray) {
+    darray_push(*names_darray, &"VK_KHR_win32_surface");
+}
+
 LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param) {
     switch (msg) {
         case WM_ERASEBKGND:
@@ -211,6 +217,8 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARA
             // Key pressed/released
             b8 pressed = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
             keys key = (u16)w_param;
+
+            // Pass to the input subsystem for processing.
             input_process_key(key, pressed);
 
         } break;
@@ -218,6 +226,8 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARA
             // Mouse move
             i32 x_position = GET_X_LPARAM(l_param);
             i32 y_position = GET_Y_LPARAM(l_param);
+
+            // Pass over to the input subsystem.
             input_process_mouse_move(x_position, y_position);
 
         } break;
@@ -225,7 +235,7 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARA
             i32 z_delta = GET_WHEEL_DELTA_WPARAM(w_param);
             if (z_delta != 0) {
                 // Flatten the input to an OS-independent (-1, 1)
-                 z_delta = (z_delta < 0) ? -1 : 1;
+                z_delta = (z_delta < 0) ? -1 : 1;
                 input_process_mouse_wheel(z_delta);
             }
         } break;
@@ -262,4 +272,4 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARA
     return DefWindowProcA(hwnd, msg, w_param, l_param);
 }
 
-#endif // KPLATFORM_WINDOWS
+#endif  // KPLATFORM_WINDOWS
